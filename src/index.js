@@ -7,7 +7,7 @@ import { addToQueue, getHeaders, getSpotifyReady, getTrackURI } from './spotify.
 import open from 'open'
 
 const lastfm = new LastFmNode({ api_key: secrets.lastfm.apiKey, secret: secrets.lastfm.secret })
-const instantMode = true // If true, the targets don't need to scrobble to add to queue. Means it will queue the tracks they don't want to listen to.
+const instantMode = false // If true, the targets don't need to scrobble to add to queue. Means it will queue the tracks they don't want to listen to.
 const stalklist = [] // Don't touch this, use the .adduser username command.
 let spotifyCode = null // Don't touch this either
 

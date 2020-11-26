@@ -1,11 +1,10 @@
 # FMLeech
 Track the scrobbles of multiple last.fm users, and queue their songs automatically into spotify.
+
 ![Example](https://cdn.discordapp.com/attachments/548683437524123660/781652606338596924/unknown.png)
-____
 
 ## Why?
 I enjoy listening to a wide variety of music, I enjoy listening to my friends music, and this lets me kill two birds with one stone.
-___
 
 ## How?
 

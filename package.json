@@ -1,0 +1,29 @@
+{
+  "name": "fmleech",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A lastfm crawler to enjoy other people's music.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "lastfm": "^0.9.3",
+    "node-fetch": "^2.6.1",
+    "open": "^7.3.0",
+    "readline-async": "github:dannynemer/readline-async"
+  },
+  "devDependencies": {
+    "eslint": "^7.14.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1"
+  }
+}

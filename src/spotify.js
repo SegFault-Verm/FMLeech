@@ -21,7 +21,7 @@ export const getHeaders = async (spotifyCode) => {
     )
     const result = await fetchToken.json()
     token = { token: result.access_token, refresh: result.refresh_token, expires: new Date(Date.now() + result.expires_in - 1 * 1000) }
-    colorLog('yellow', 'Fetched initial spotify token.')
+    colorLog('yellow', 'Fetched spotify token.')
   }
   return {
     Accept: 'application/json',
@@ -45,7 +45,7 @@ export const getTrackURI = async (songName, artistName, albumName, spotifyCode, 
   const result = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(`track:${songName}`)}&type=track&limit=50&offset=${existingSearch.traversed}`, { headers: await getHeaders(spotifyCode) })
   const rJSON = await result.json()
   const nowTraversed = existingSearch.traversed + 50
-  if (!rJSON || !rJSON.items) return null
+  if (!rJSON || !rJSON.tracks) return null
   const { tracks: { items, total } } = rJSON
 
   const fullMatches = items?.filter((track) => track.artists.map((a) => a.name).includes(artistName) && track.album.name === albumName)

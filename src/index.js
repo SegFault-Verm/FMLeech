@@ -51,7 +51,7 @@ const addToStalkList = (user) => {
   // Create the listeners for this user. Currently no checking for whether or not the user is real.
   const handler = lastfm.stream(user)
   handler.on(instantMode ? 'nowPlaying' : 'scrobbled', (track) => listenEvent(track, user))
-  handler.on('error', console.log)
+  handler.on('error', (e) => console.log({ item: user, e }))
   stalklist.push({ user, handler })
   handler.start()
   writeFileSync('stalkList.json', JSON.stringify({ stalklist: stalklist.map((item) => item.user) }))
@@ -127,7 +127,7 @@ else colorLog('magenta', 'Use ".adduser LastFMusername" to get started.')
 stalklist.forEach((item) => {
   const handler = lastfm.stream(item.user)
   handler.on(instantMode ? 'nowPlaying' : 'scrobbled', (track) => listenEvent(track, item.user))
-  handler.on('error', console.log)
+  handler.on('error', (e) => console.log({ item, e }))
   handler.start()
   item.handler = handler
 })

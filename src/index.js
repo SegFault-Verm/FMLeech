@@ -36,9 +36,12 @@ const listenEvent = async (track, user) => {
   if (!getSpotifyReady()) return // Make sure the token is initialised.
   const trackURI = await getTrackURI(name, artist['#text'], album['#text'], spotifyCode) // Try to find the correct spotify song.
   if (trackURI) {
-    await addToQueue(trackURI, spotifyCode) // Add to the spotify queue
-    colorLog('cyan', `Added ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
-    return
+    const add = await addToQueue(trackURI, spotifyCode) // Add to the spotify queue
+    if (add) {
+      colorLog('cyan', `Added ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
+      return
+    }
+    colorLog('red', `Failed to add ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
   }
   colorLog('red', `Unable to find ${user}'s track on Spotify: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
 }
@@ -51,7 +54,7 @@ const addToStalkList = (user) => {
   // Create the listeners for this user. Currently no checking for whether or not the user is real.
   const handler = lastfm.stream(user)
   handler.on(instantMode ? 'nowPlaying' : 'scrobbled', (track) => listenEvent(track, user))
-  handler.on('error', (e) => console.log({ item: user, e }))
+  handler.on('error', () => {})
   stalklist.push({ user, handler })
   handler.start()
   writeFileSync('stalkList.json', JSON.stringify({ stalklist: stalklist.map((item) => item.user) }))
@@ -104,7 +107,7 @@ app.get('/callback', (req, res) => {
   if (req.query.code) {
     spotifyCode = req.query.code
     getHeaders(spotifyCode)
-    colorLog('yellow', 'Spotify oauth complete.')
+    colorLog('yellow', 'Spotify oAuth complete.')
     res.send('Authorized, you can now close this tab.<script>window.close()</script>')
     return
   }
@@ -127,7 +130,7 @@ else colorLog('magenta', 'Use ".adduser LastFMusername" to get started.')
 stalklist.forEach((item) => {
   const handler = lastfm.stream(item.user)
   handler.on(instantMode ? 'nowPlaying' : 'scrobbled', (track) => listenEvent(track, item.user))
-  handler.on('error', (e) => console.log({ item, e }))
+  handler.on('error', () => {})
   handler.start()
   item.handler = handler
 })

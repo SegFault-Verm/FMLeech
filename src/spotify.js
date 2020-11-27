@@ -31,9 +31,10 @@ export const getHeaders = async (spotifyCode) => {
 }
 
 export const addToQueue = async (uri, spotifyCode) => {
-  const req = await fetch(`https://api.spotify.com/v1/me/player/queue?uri=${uri}`, { method: 'POST', headers: await getHeaders(spotifyCode) })
+  const cleanURI = uri.indexOf('spotify') === -1 ? `spotify:track:${uri}` : uri // Sometimes valid uris are returned without the spotify:track prefix.
+  const req = await fetch(`https://api.spotify.com/v1/me/player/queue?uri=${cleanURI}`, { method: 'POST', headers: await getHeaders(spotifyCode) })
   const res = await req.json().catch(() => {})
-  if (res && res.error) return res.error
+  if (res && res.error) return new Error(res.error.message)
   if (res) return new Error('An unexpected error occured.')
   return true
 }
@@ -45,16 +46,31 @@ export const getTrackURI = async (songName, artistName, albumName, spotifyCode, 
   const result = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(`track:${songName}`)}&type=track&limit=50&offset=${existingSearch.traversed}`, { headers: await getHeaders(spotifyCode) })
   const rJSON = await result.json()
   const nowTraversed = existingSearch.traversed + 50
-  if (!rJSON || !rJSON.tracks) return null
+  const lowerArtistName = artistName.toLowerCase()
+  const lowerAlbumName = albumName.toLowerCase()
+  if (!rJSON || !rJSON.tracks) return existingSearch.partial?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
   const { tracks: { items, total } } = rJSON
 
-  const fullMatches = items?.filter((track) => track.artists.map((a) => a.name).includes(artistName) && track.album.name === albumName)
+  const fullMatches = items?.filter((track) => {
+    const matchingTrackArtist = track.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    const matchingAlbumArtist = track.album.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    const matchingAlbumName = track.album.name.toLowerCase() === lowerAlbumName
+    return (matchingTrackArtist || matchingAlbumArtist) && matchingAlbumName
+  })
   if (fullMatches?.[0]) return fullMatches[0].uri
 
-  const partialMatches = items.filter((track) => track.artists.map((a) => a.name).includes(artistName))
+  const partialMatches = [...items.filter((track) => {
+    const matchingTrackArtist = track.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    const matchingAlbumArtist = track.album.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    return matchingAlbumArtist || matchingTrackArtist
+  }), ...existingSearch.partial]
+
   // I don't actually know if this part works, because it's never got here.
-  if (nowTraversed >= total) return partialMatches?.sort((a, b) => b.popularity - a.popularity)?.[0] || null
+  if (nowTraversed >= total) {
+    if (partialMatches.length) console.log('Returning a partial match')
+    return partialMatches?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
+  }
   // eslint-disable-next-line promise/param-names
   await new Promise((r) => setTimeout(r, 350))
-  return await getTrackURI(songName, artistName, albumName, spotifyCode, { partial: [...existingSearch.partial, ...partialMatches], traversed: nowTraversed })
+  return await getTrackURI(songName, lowerArtistName, lowerAlbumName, spotifyCode, { partial: partialMatches, traversed: nowTraversed })
 }

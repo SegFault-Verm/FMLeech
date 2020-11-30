@@ -16,14 +16,5 @@
     "node-fetch": "^2.6.1",
     "open": "^7.3.0",
     "readline-async": "github:dannynemer/readline-async"
-  },
-  "devDependencies": {
-    "eslint": "^7.14.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-google": "^0.14.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1"
   }
 }

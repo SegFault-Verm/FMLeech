@@ -8,7 +8,7 @@ export const getSpotifyReady = () => !!token
 // Gets the token if it's not set, or has expired. Currently not using the refresh_token cause calling the end point
 // again just refreshes it anyway.
 export const getHeaders = async (spotifyCode) => {
-  if (!token || Date.now() >= token.expires_in) {
+  if (!token || Date.now() >= token.expires) {
     // eslint-disable-next-line new-cap
     const preAuth = new Buffer.from(`${secrets.spotify.clientId}:${secrets.spotify.secret}`).toString('base64')
     const fetchToken = await fetch(
@@ -20,7 +20,7 @@ export const getHeaders = async (spotifyCode) => {
       }
     )
     const result = await fetchToken.json()
-    token = { token: result.access_token, refresh: result.refresh_token, expires: new Date(Date.now() + result.expires_in - 1 * 1000) }
+    token = { token: result.access_token, refresh: result.refresh_token, expires: Date.now() + ((result.expires_in - 1) * 1000) }
     colorLog('yellow', 'Fetched spotify token.')
   }
   return {
@@ -65,11 +65,7 @@ export const getTrackURI = async (songName, artistName, albumName, spotifyCode, 
     return matchingAlbumArtist || matchingTrackArtist
   }), ...existingSearch.partial]
 
-  // I don't actually know if this part works, because it's never got here.
-  if (nowTraversed >= total) {
-    if (partialMatches.length) console.log('Returning a partial match')
-    return partialMatches?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
-  }
+  if (nowTraversed >= total) return partialMatches?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
   // eslint-disable-next-line promise/param-names
   await new Promise((r) => setTimeout(r, 350))
   return await getTrackURI(songName, lowerArtistName, lowerAlbumName, spotifyCode, { partial: partialMatches, traversed: nowTraversed })

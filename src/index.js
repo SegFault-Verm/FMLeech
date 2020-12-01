@@ -5,11 +5,15 @@ import { readFileSync, writeFileSync } from 'fs'
 import express from 'express'
 import { addToQueue, getHeaders, getSpotifyReady, getTrackURI } from './spotify.js'
 import open from 'open'
+import { client } from './discord.js'
 
+const memoryQueue = []
 const lastfm = new LastFmNode({ api_key: secrets.lastfm.apiKey, secret: secrets.lastfm.secret })
 const instantMode = false // If true, the targets don't need to scrobble to add to queue. Means it will queue the tracks they don't want to listen to.
 const stalklist = [] // Don't touch this, use the .adduser username command.
 let spotifyCode = null // Don't touch this either
+
+export const getMemoryQueue = () => memoryQueue
 
 export const colorLog = (color, log) => {
   const colors = {
@@ -38,6 +42,7 @@ const listenEvent = async (track, user) => {
   if (trackURI) {
     const add = await addToQueue(trackURI, spotifyCode) // Add to the spotify queue
     if (add) {
+      memoryQueue.push({user, name, artist: artist['#text'], album: album['#text'] } )
       colorLog('cyan', `Added ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
       return
     }
@@ -134,3 +139,19 @@ stalklist.forEach((item) => {
   handler.start()
   item.handler = handler
 })
+
+const segHandler = lastfm.stream('transphobia')
+segHandler.on('nowPlaying', (track) => {
+  let songIndexOfMemQ = null
+  memoryQueue.filter((v, i) => {
+    if(v.name === track.name) {
+      songIndexOfMemQ = songIndexOfMemQ || i
+      return true
+    }
+    return false
+  })
+  if(songIndexOfMemQ) memoryQueue.splice(0, songIndexOfMemQ + 1)
+})
+segHandler.start()
+
+console.log(client ? 'Initialized Discord': 'Failed to initialize Discord')

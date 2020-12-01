@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "discord.js": "^12.5.1",
     "express": "^4.17.1",
     "lastfm": "^0.9.3",
     "node-fetch": "^2.6.1",

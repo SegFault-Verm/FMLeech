@@ -5,28 +5,29 @@ import { colorLog } from './index.js'
 let token = null // Don't touch
 export const getSpotifyReady = () => !!token
 
-// Gets the token if it's not set, or has expired. Currently not using the refresh_token cause calling the end point
-// again just refreshes it anyway.
+// If there's no stored token, get one. If the stored token is expired, refresh it.
+// Otherwise, return the stored token.
 export const getHeaders = async (spotifyCode) => {
   if (!token || Date.now() >= token.expires) {
     // eslint-disable-next-line new-cap
     const preAuth = new Buffer.from(`${secrets.spotify.clientId}:${secrets.spotify.secret}`).toString('base64')
+    const body = token?.refresh ? `refresh_token=${token.refresh}&grant_type=refresh_token` : `code=${spotifyCode}&grant_type=authorization_code&redirect_uri=http://localhost:6969/callback`
     const fetchToken = await fetch(
       'https://accounts.spotify.com/api/token',
       {
         method: 'POST',
         headers: { Authorization: `Basic ${preAuth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `code=${spotifyCode}&grant_type=authorization_code&redirect_uri=http://localhost:6969/callback`
+        body
       }
     )
     const result = await fetchToken.json()
-    token = { token: result.access_token, refresh: result.refresh_token, expires: Date.now() + ((result.expires_in - 1) * 1000) }
+    token = { token: result.access_token, refresh: token?.refresh || result.refresh_token, expires: Date.now() + ((result.expires_in - 1) * 1000) }
     colorLog('yellow', 'Fetched spotify token.')
   }
   return {
     Accept: 'application/json',
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token.token}`
+    Authorization: `${token?.refresh_token ? 'Basic' : 'Bearer'} ${token.token}`
   }
 }
 

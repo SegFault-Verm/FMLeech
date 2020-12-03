@@ -42,7 +42,7 @@ const listenEvent = async (track, user) => {
   if (trackURI) {
     const add = await addToQueue(trackURI, spotifyCode) // Add to the spotify queue
     if (add) {
-      memoryQueue.push({user, name, artist: artist['#text'], album: album['#text'] } )
+      memoryQueue.push({user: user, name, artist: artist['#text'], album: album['#text'] } )
       colorLog('cyan', `Added ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
       return
     }
@@ -74,6 +74,7 @@ const removeFromStalkList = (user) => {
   }
   // Revoke the listners for this user.
   const theUser = stalklist[theIndex]
+  theUser.handler.stop()
   delete theUser.handler
   stalklist.splice(theIndex, 1)
   writeFileSync('stalkList.json', JSON.stringify({ stalklist: stalklist.map((item) => item.user) }))
@@ -141,15 +142,16 @@ stalklist.forEach((item) => {
 })
 
 const segHandler = lastfm.stream('transphobia')
+segHandler.on('error', () => {})
 segHandler.on('nowPlaying', (track) => {
   let songIndexOfMemQ = null
-  memoryQueue.filter((v, i) => {
-    if(v.name === track.name) {
-      songIndexOfMemQ = songIndexOfMemQ || i
-      return true
+
+  for(let i=0; i<memoryQueue.length; i++) {
+    if(memoryQueue[i].name === track.name) {
+      songIndexOfMemQ = i
+      break
     }
-    return false
-  })
+  }
   if(songIndexOfMemQ) memoryQueue.splice(0, songIndexOfMemQ + 1)
 })
 segHandler.start()

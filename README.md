@@ -21,6 +21,10 @@ I enjoy listening to a wide variety of music, I enjoy listening to my friends mu
       spotify: {
         clientId: '', // https://developer.spotify.com/dashboard/applications
         secret: ''
+      },
+      discord: {
+        token: '', // Discord bot token
+        channel: '' // The channel the command works in
       }
     }
     ````

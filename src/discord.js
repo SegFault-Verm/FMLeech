@@ -2,16 +2,15 @@ import Discord from 'discord.js';
 import secrets from '../secrets.js';
 import { getMemoryQueue } from './index.js';
 export const client = new Discord.Client();
-
 const genFullList = () => {
-  const translate = getMemoryQueue().map((song, i) => `${i+1}. _${song.user}_ - **${song.name}** by ${song.artist}`)
+  const translate = getMemoryQueue().map((song, i) => (`${i+1}. _${song.user}_ - **${song.name}** by ${song.artist}`).replace(/[@`*_~#]/g, ''))
   const q = []
-  while(translate.length) q.push(translate.splice(0, 20))
+  while(translate.length) q.push(translate.splice(0, 30))
   return q
 }
 
 client.on('message', async msg => {
-  if (msg.content.toLowerCase() === '!segq' && msg.channel.id === '765367648615399425') {
+  if (msg.content.toLowerCase() === '!segq' && msg.channel.id === secrets.discord.channel) {
     const q = genFullList()
     if(!q.length) {
       msg.channel.send('Seg\'s Spotify Queue is empty.')

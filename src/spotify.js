@@ -49,25 +49,29 @@ export const getTrackURI = async (songName, artistName, albumName, spotifyCode, 
   const nowTraversed = existingSearch.traversed + 50
   const lowerArtistName = artistName.toLowerCase()
   const lowerAlbumName = albumName.toLowerCase()
+  // If rJSON.tracks is null, this iteration of search pages produced no results, so take the results we've collected
+  // and find the most popular one.
   if (!rJSON || !rJSON.tracks) return existingSearch.partial?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
   const { tracks: { items, total } } = rJSON
 
+  // Full matches: spotify track/album artist === lastfm track/album artist, AND the album name matches.
   const fullMatches = items?.filter((track) => {
     const matchingTrackArtist = track.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
-    const matchingAlbumArtist = track.album.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
-    const matchingAlbumName = track.album.name.toLowerCase() === lowerAlbumName
+    const matchingAlbumArtist = track.album?.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    const matchingAlbumName = track.album?.name.toLowerCase() === lowerAlbumName
     return (matchingTrackArtist || matchingAlbumArtist) && matchingAlbumName
   })
   if (fullMatches?.[0]) return fullMatches[0].uri
 
+  // Partial matches (less likely to be the correct track)
+  // spotify track/album artist === lastfm track/album artist, albume name might not match.
   const partialMatches = [...items.filter((track) => {
     const matchingTrackArtist = track.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
-    const matchingAlbumArtist = track.album.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
+    const matchingAlbumArtist = track.album?.artists.map((a) => a.name.toLowerCase()).includes(lowerArtistName)
     return matchingAlbumArtist || matchingTrackArtist
   }), ...existingSearch.partial]
 
   if (nowTraversed >= total) return partialMatches?.sort((a, b) => b.popularity - a.popularity)?.[0]?.id || null
-  // eslint-disable-next-line promise/param-names
-  await new Promise((r) => setTimeout(r, 350))
+  await new Promise((resolve) => setTimeout(resolve, 350))
   return await getTrackURI(songName, lowerArtistName, lowerAlbumName, spotifyCode, { partial: partialMatches, traversed: nowTraversed })
 }

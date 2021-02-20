@@ -15,6 +15,7 @@ let spotifyCode = null // Don't touch this either
 
 export const getMemoryQueue = () => memoryQueue
 
+// Just for making the console pretty
 export const colorLog = (color, log) => {
   const colors = {
     black: '\x1b[30m',
@@ -34,7 +35,7 @@ const printStalklist = () => {
   else colorLog('red', 'The stalklist is empty')
 }
 
-// Fired when any of the listneers for users fires.
+// Fired when any of the listners for users fires.
 const listenEvent = async (track, user) => {
   const { name, artist, album, url } = track
   if (!getSpotifyReady()) return // Make sure the token is initialised.
@@ -42,7 +43,7 @@ const listenEvent = async (track, user) => {
   if (trackURI) {
     const add = await addToQueue(trackURI, spotifyCode) // Add to the spotify queue
     if (add) {
-      memoryQueue.push({user: user, name, artist: artist['#text'], album: album['#text'] } )
+      memoryQueue.push({ user: user, name, artist: artist['#text'], album: album['#text'] })
       colorLog('cyan', `Added ${user}'s track to queue: ${name}, by ${artist['#text']}, on ${album['#text']} (${url})`)
       return
     }
@@ -141,19 +142,14 @@ stalklist.forEach((item) => {
   item.handler = handler
 })
 
-const segHandler = lastfm.stream('transphobia')
+const segHandler = lastfm.stream('anthropiscine')
 segHandler.on('error', () => {})
 segHandler.on('nowPlaying', (track) => {
   let songIndexOfMemQ = null
 
-  for(let i=0; i<memoryQueue.length; i++) {
-    if(memoryQueue[i].name === track.name) {
-      songIndexOfMemQ = i
-      break
-    }
-  }
-  if(songIndexOfMemQ) memoryQueue.splice(0, songIndexOfMemQ + 1)
+  for (let i = 0; i < memoryQueue.length; i++) if (memoryQueue[i].name === track.name) { songIndexOfMemQ = i; break }
+  if (songIndexOfMemQ) memoryQueue.splice(0, songIndexOfMemQ + 1)
 })
 segHandler.start()
 
-console.log(client ? 'Initialized Discord': 'Failed to initialize Discord')
+console.log(client ? 'Initialized Discord' : 'Discord bot not in use.')

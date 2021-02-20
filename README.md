@@ -19,11 +19,11 @@ I enjoy listening to a wide variety of music, I enjoy listening to my friends mu
         secret: ''
       },
       spotify: {
-        clientId: '', // https://developer.spotify.com/dashboard/applications
+        clientId: '', // https://developer.spotify.com/dashboard/applications and set the redirectUri to http://localhost:6969/callback
         secret: ''
       },
       discord: {
-        token: '', // Discord bot token
+        token: '', // Discord bot token. Exclude this field or set it to null to disable the !segQ command.
         channel: '' // The channel the command works in
       }
     }

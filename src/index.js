@@ -11,11 +11,9 @@ const lastfm = new LastFmNode({ api_key: secrets.lastfm.apiKey, secret: secrets.
 const instantMode = false // If true, the targets don't need to scrobble to add to queue. Means it will queue the tracks they don't want to listen to.
 const stalklist = [] // Don't touch this, use the .adduser username command.
 let spotifyCode = null // Don't touch this either
-const current = { song: null } // Or this
 const memoryQueue = [] // Or this
 
 export const getMemoryQueue = () => memoryQueue
-export const getCurrentSong = () => current.song
 
 // Just for making the console pretty
 export const colorLog = (color, log) => {
@@ -148,13 +146,8 @@ const segHandler = lastfm.stream('anthropiscine')
 segHandler.on('error', () => {})
 segHandler.on('nowPlaying', (track) => {
   let songIndexOfMemQ = null
-
   for (let i = 0; i < memoryQueue.length; i++) if (memoryQueue[i].name === track.name) { songIndexOfMemQ = i; break }
-  if (songIndexOfMemQ) {
-    const removedTracks = memoryQueue.splice(0, songIndexOfMemQ + 1)
-    current.song = removedTracks[removedTracks.length - 1]
-    console.log(current.song)
-  }
+  if (songIndexOfMemQ) memoryQueue.splice(0, songIndexOfMemQ + 1)
 })
 segHandler.start()
 
